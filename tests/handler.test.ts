@@ -112,16 +112,33 @@ describe('createAuthHandler()', () => {
     expect(calls).toEqual([]);
   });
 
+  it('reports the reason of a rejection and logs it without the secret', async () => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const wrong = setup(
+      () => new Response(JSON.stringify({ error: 'incorrect_client_credentials' })),
+    );
+    const response = await wrong.handler(post('token', { code: 'c', redirectUri: 'r' }));
+    expect(await response.json()).toEqual({
+      error: 'rejected',
+      reason: 'incorrect_client_credentials',
+    });
+    expect(log).toHaveBeenCalledWith(
+      'GitHub rejected the token request: incorrect_client_credentials',
+    );
+    expect(JSON.stringify(log.mock.calls)).not.toContain('secret-1');
+    log.mockRestore();
+  });
+
   it('reports a rejected code, a rejected answer shape and an unreachable GitHub', async () => {
     const rejected = setup(() => new Response(JSON.stringify({ error: 'bad_verification_code' })));
     const first = await rejected.handler(post('token', { code: 'c', redirectUri: 'r' }));
     expect(first.status).toBe(400);
-    expect(await first.json()).toEqual({ error: 'rejected' });
+    expect(await first.json()).toEqual({ error: 'rejected', reason: 'bad_verification_code' });
 
     const unexpiring = setup(() => new Response(JSON.stringify({ access_token: 'at' })));
     const second = await unexpiring.handler(post('token', { code: 'c', redirectUri: 'r' }));
     expect(second.status).toBe(400);
-    expect(await second.json()).toEqual({ error: 'rejected' });
+    expect(await second.json()).toEqual({ error: 'rejected', reason: 'invalid' });
 
     const odd = setup(() => new Response('[]'));
     expect((await odd.handler(post('token', { code: 'c', redirectUri: 'r' }))).status).toBe(400);

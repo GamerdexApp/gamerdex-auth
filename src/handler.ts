@@ -63,7 +63,10 @@ export const createAuthHandler = (options: AuthHandlerOptions) => {
           }
         : null,
     );
-    return tokens ? reply(200, tokens, origin) : reply(400, { error: 'rejected' }, origin);
+    if (tokens) return reply(200, tokens, origin);
+    const reason = isRecord(body) && typeof body.error === 'string' ? body.error : 'invalid';
+    console.error(`GitHub rejected the token request: ${reason}`);
+    return reply(400, { error: 'rejected', reason }, origin);
   };
 
   return async (request: Request): Promise<Response> => {

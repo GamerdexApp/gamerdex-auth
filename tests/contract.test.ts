@@ -1,3 +1,4 @@
+import { createGoogleHandler } from '@/google';
 import { createAuthHandler } from '@/handler';
 import { createTokenSource, type StoredTokens } from '@gamerdexapp/gamerdex-sync';
 
@@ -60,5 +61,54 @@ describe('the token source of gamerdex-sync against this handler', () => {
         )) as unknown as typeof fetch,
     });
     await expect(source.signIn('c', 'r')).rejects.toMatchObject({ kind: 'auth' });
+  });
+});
+
+describe('the token source of gamerdex-sync against the Google handler', () => {
+  const googleFetch = (async (_url: string, init: RequestInit) => {
+    const form = new URLSearchParams(String(init.body));
+    const body =
+      form.get('grant_type') === 'authorization_code'
+        ? {
+            access_token: 'at-g1',
+            expires_in: 3599,
+            refresh_token: 'rt-g',
+            scope: 'https://www.googleapis.com/auth/drive.file',
+          }
+        : { access_token: 'at-g2', expires_in: 3599 };
+    return new Response(JSON.stringify(body));
+  }) as unknown as typeof fetch;
+
+  const handler = createGoogleHandler({
+    clientId: 'id',
+    clientSecret: 's',
+    allowedOrigins: [ORIGIN],
+    fetch: googleFetch,
+  });
+
+  const toHandler = (async (url: string, init: RequestInit) =>
+    handler(
+      new Request(url, { ...init, headers: { ...(init.headers as object), Origin: ORIGIN } }),
+    )) as unknown as typeof fetch;
+
+  it('signs in and renews, keeping the refresh token that Google sent once', async () => {
+    let stored: StoredTokens | null = null;
+    let now = 1_000;
+    const source = createTokenSource({
+      endpoint: 'https://auth.test/api/google',
+      load: () => stored,
+      save: (tokens) => {
+        stored = tokens;
+      },
+      now: () => now,
+      fetch: toHandler,
+    });
+
+    await source.signIn('code-1', 'https://tracker.test/sync/callback');
+    expect(await source.getToken()).toBe('at-g1');
+
+    now += 3_540_000;
+    expect(await source.getToken()).toBe('at-g2');
+    expect(stored).toMatchObject({ refreshToken: 'rt-g', accessExpiresAt: now + 3_599_000 });
   });
 });

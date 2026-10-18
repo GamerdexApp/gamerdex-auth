@@ -1,4 +1,4 @@
-import { createAuthHandler } from 'gamerdex-sync';
+import { createAuthHandler } from './handler';
 
 export interface GitHubRouteEnv {
   GITHUB_CLIENT_SECRET?: string;

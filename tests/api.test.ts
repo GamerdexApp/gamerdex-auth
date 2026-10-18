@@ -3,7 +3,7 @@ describe('api/github/[action]', () => {
     jest.resetModules();
     process.env.GITHUB_CLIENT_SECRET = 's';
     process.env.ALLOWED_ORIGINS = 'https://tracker.test';
-    const route = await import('../api/github/[action]');
+    const route = require('../api/github/[action]') as typeof import('../api/github/[action].js');
     expect(route.POST).toBe(route.OPTIONS);
     const response = await route.OPTIONS(
       new Request('https://auth.test/api/github/token', {

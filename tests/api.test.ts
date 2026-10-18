@@ -29,4 +29,37 @@ describe('api/github/[action]', () => {
     );
     expect(response.status).toBe(204);
   });
+
+  it('exports the POST and OPTIONS handlers of the Dropbox route', async () => {
+    jest.resetModules();
+    process.env.DROPBOX_CLIENT_ID = 'id';
+    process.env.DROPBOX_CLIENT_SECRET = 's';
+    process.env.ALLOWED_ORIGINS = 'https://tracker.test';
+    const route = require('../api/dropbox/[action]') as typeof import('../api/dropbox/[action].js');
+    expect(route.POST).toBe(route.OPTIONS);
+    const response = await route.OPTIONS(
+      new Request('https://auth.test/api/dropbox/token', {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://tracker.test' },
+      }),
+    );
+    expect(response.status).toBe(204);
+  });
+
+  it('exports the POST and OPTIONS handlers of the Microsoft route', async () => {
+    jest.resetModules();
+    process.env.MICROSOFT_CLIENT_ID = 'id';
+    process.env.MICROSOFT_CLIENT_SECRET = 's';
+    process.env.ALLOWED_ORIGINS = 'https://tracker.test';
+    const route =
+      require('../api/microsoft/[action]') as typeof import('../api/microsoft/[action].js');
+    expect(route.POST).toBe(route.OPTIONS);
+    const response = await route.OPTIONS(
+      new Request('https://auth.test/api/microsoft/token', {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://tracker.test' },
+      }),
+    );
+    expect(response.status).toBe(204);
+  });
 });

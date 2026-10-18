@@ -1,5 +1,6 @@
 import { GOOGLE_DRIVE_SCOPE, parseTokenResponse } from '@gamerdexapp/gamerdex-sync';
-import { createTokenHandler, ExchangeRequest, ExchangeResult, isRecord } from './tokenHandler';
+import { grantedScopes, grantForm, postTokenForm } from './oauthForm';
+import { createTokenHandler, ExchangeRequest, ExchangeResult } from './tokenHandler';
 
 export interface GoogleHandlerOptions {
   clientId: string;
@@ -20,42 +21,20 @@ export const GOOGLE_REFRESH_LIFETIME_SECONDS = 15_552_000;
 const googleExchange =
   (options: GoogleHandlerOptions) =>
   async (request: ExchangeRequest): Promise<ExchangeResult> => {
-    const send = options.fetch ?? ((...args) => globalThis.fetch(...args));
-    const params: Record<string, string> =
-      request.kind === 'code'
-        ? {
-            grant_type: 'authorization_code',
-            code: request.code,
-            redirect_uri: request.redirectUri,
-          }
-        : { grant_type: 'refresh_token', refresh_token: request.refreshToken };
-    let body: unknown;
-    try {
-      const response = await send(TOKEN_URL, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: options.clientId,
-          client_secret: options.clientSecret,
-          ...params,
-        }).toString(),
-      });
-      body = await response.json();
-    } catch {
-      return { kind: 'unreachable' };
-    }
-    if (!isRecord(body)) return { kind: 'rejected', reason: 'invalid' };
-    if (typeof body.error === 'string') return { kind: 'rejected', reason: body.error };
+    const answer = await postTokenForm(
+      TOKEN_URL,
+      { client_id: options.clientId, client_secret: options.clientSecret, ...grantForm(request) },
+      options.fetch ?? ((...args) => globalThis.fetch(...args)),
+    );
+    if (answer.kind !== 'answer') return answer;
+    const { body } = answer;
 
     const refreshToken = request.kind === 'refresh' ? request.refreshToken : body.refresh_token;
     if (request.kind === 'code') {
       if (typeof refreshToken !== 'string') return { kind: 'rejected', reason: 'no_refresh_token' };
-      const granted = typeof body.scope === 'string' ? body.scope.split(' ') : [];
-      if (!granted.includes(GOOGLE_DRIVE_SCOPE))
+      if (!grantedScopes(body).includes(GOOGLE_DRIVE_SCOPE)) {
         return { kind: 'rejected', reason: 'missing_scope' };
+      }
     }
     const tokens = parseTokenResponse({
       accessToken: body.access_token,

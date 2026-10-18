@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@gamerdexapp/gamerdex-sync':
-        specifier: 0.1.1
-        version: 0.1.1
+        specifier: 0.2.0
+        version: 0.2.0
     devDependencies:
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^6.0.2
@@ -261,8 +261,8 @@ packages:
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@gamerdexapp/gamerdex-sync@0.1.1':
-    resolution: {integrity: sha512-7IPU83Z3l98ok365CjDkxErn4YXvQPEwwjJPHQqY+OcJl06NO96U1F4qoVW1HGM4nrX+ZmmK/byPUUMXFv/TXQ==}
+  '@gamerdexapp/gamerdex-sync@0.2.0':
+    resolution: {integrity: sha512-IjgLb4Utjp1CnDQXe7VHdLv0RNYpcolUHJJIBrr1fbmFu+T72fkCOGJ7WtxM6uV6faCFBUCIsujdNUCULK21bQ==}
     engines: {node: '>=24'}
 
   '@humanfs/core@0.19.2':
@@ -2043,7 +2043,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@gamerdexapp/gamerdex-sync@0.1.1': {}
+  '@gamerdexapp/gamerdex-sync@0.2.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

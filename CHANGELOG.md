@@ -7,6 +7,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-18
+
+### Changed
+
+- The client IDs of Google, Dropbox and Microsoft default to the IDs in `gamerdex-sync`, so the
+  service and the apps use the same ID. `GOOGLE_CLIENT_ID`, `DROPBOX_CLIENT_ID` and
+  `MICROSOFT_CLIENT_ID` are now optional and replace the default when they are set. Only the client
+  secrets are required.
+
 ## [1.0.0] - 2026-10-18
 
 ### Added

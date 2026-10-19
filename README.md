@@ -33,16 +33,22 @@ logged without any secret.
 
 ## Environment
 
-| Variable                  | Value                                                              |
-| ------------------------- | ------------------------------------------------------------------ |
-| `GITHUB_CLIENT_SECRET`    | The client secret of the `gamerdex-sync` GitHub App.               |
-| `GOOGLE_CLIENT_ID`        | The client ID of the Google Web application OAuth client.          |
-| `GOOGLE_CLIENT_SECRET`    | The client secret of that Google OAuth client.                     |
-| `DROPBOX_CLIENT_ID`       | The app key of the Dropbox app.                                    |
-| `DROPBOX_CLIENT_SECRET`   | The app secret of that Dropbox app.                                |
-| `MICROSOFT_CLIENT_ID`     | The application (client) ID of the Microsoft app registration.     |
-| `MICROSOFT_CLIENT_SECRET` | The value of a client secret of that app registration.             |
-| `ALLOWED_ORIGINS`         | The origins of the Gamerdex apps, separated by commas, no slashes. |
+| Variable                  | Value                                                               |
+| ------------------------- | ------------------------------------------------------------------- |
+| `GITHUB_CLIENT_SECRET`    | The client secret of the `gamerdex-sync` GitHub App.                |
+| `GOOGLE_CLIENT_ID`        | Optional. Replaces the Google client ID of `gamerdex-sync`.         |
+| `GOOGLE_CLIENT_SECRET`    | The client secret of that Google OAuth client.                      |
+| `DROPBOX_CLIENT_ID`       | Optional. Replaces the Dropbox app key of `gamerdex-sync`.          |
+| `DROPBOX_CLIENT_SECRET`   | The app secret of that Dropbox app.                                 |
+| `MICROSOFT_CLIENT_ID`     | Optional. Replaces the Microsoft application ID of `gamerdex-sync`. |
+| `MICROSOFT_CLIENT_SECRET` | The value of a client secret of that app registration.              |
+| `ALLOWED_ORIGINS`         | The origins of the Gamerdex apps, separated by commas, no slashes.  |
+
+The client IDs of Google, Dropbox and Microsoft are public, and `gamerdex-sync` holds them as
+`CLIENT_IDS`. The routes use those IDs unless the variable replaces one. The apps put the same IDs
+in their sign in addresses, and a provider refuses a code that was issued to another ID, so change
+an ID in the package and here together. A variable that is set but empty makes that provider
+answer 500. Only the secrets are required.
 
 Copy `.env.example` to `.env` for local work. Never commit `.env`. Set the same variables in the
 Vercel project settings.
@@ -79,7 +85,7 @@ route returns the refresh token that it was given, with a lifetime of 180 days f
 Dropbox setup, in the App Console: create a Scoped access app with the App folder access type,
 enable the two file scopes on the Permissions tab, and add the redirect URI of each app
 (`https://<app host>/sync/callback`, and `http://localhost:3000/sync/callback` for local work). The
-app key is `DROPBOX_CLIENT_ID` and the app secret is `DROPBOX_CLIENT_SECRET`.
+app key is `CLIENT_IDS.dropbox` in `gamerdex-sync` and the app secret is `DROPBOX_CLIENT_SECRET`.
 
 ## Microsoft
 
@@ -94,8 +100,8 @@ Microsoft setup, in the Microsoft Entra admin center: register an application fo
 accounts only, add a Web redirect URI for each app (not a single page application URI, which would
 refuse the client secret), create a client secret and copy its value at once, and add the delegated
 Microsoft Graph permissions `Files.ReadWrite.AppFolder` and `offline_access`. The secret expires, so
-note its date. The application ID is `MICROSOFT_CLIENT_ID` and the secret value is
-`MICROSOFT_CLIENT_SECRET`.
+note its date. The application ID is `CLIENT_IDS.microsoft` in `gamerdex-sync` and the secret value
+is `MICROSOFT_CLIENT_SECRET`.
 
 ## Commands
 
